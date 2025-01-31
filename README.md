@@ -1,4 +1,4 @@
-# Best-Hackathon-Project
+# Pet Audio Warning System (P.A.W.S.)
 
 ### Team : Jungle Gap
 - Location
