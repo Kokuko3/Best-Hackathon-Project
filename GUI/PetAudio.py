@@ -9,6 +9,10 @@ pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
 # Get the directory where PetAudio.py is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# Jupyter Lab API Endpoint
+JUPYTER_HOST = os.getenv("JUPYTER_HOST", "http://model_service:8888")
+MOOD_API_URL = f"{JUPYTER_HOST}/mood"
+
 # Mapping: Mood -> (Emoji, Sound File)
 moods = {
     "Happy": ("😺", os.path.join(BASE_DIR, "cats-meow-81221.mp3")),
