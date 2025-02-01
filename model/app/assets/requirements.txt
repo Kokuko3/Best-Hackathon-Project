@@ -1,0 +1,10 @@
+pandas
+matplotlib
+scikit-learn
+scipy
+librosa
+tensorboard
+torch-summary
+ipywidgets
+seaborn
+pygame

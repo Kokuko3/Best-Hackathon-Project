@@ -1,0 +1,22 @@
+services:
+  classification-model:
+    build: ./model/app
+    ports:
+      - 8888:8888
+    volumes:
+      - ./model/app:/app
+    # Share NVIDIA GPU between the host and this container if there is 
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilites: [gpu]
+
+  ## TODO: Working on GUI
+  # gui:
+  #   build: 
+  #     context: ./GUI
+  #   depends_on:
+  #     - classification-model
