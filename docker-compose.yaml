@@ -1,0 +1,15 @@
+services:
+  jupyter-lab:
+    build: ./model/app
+    ports:
+      - 8888:8888
+    volumes:
+      - ./app:/app
+    # Share NVIDIA GPU between the host and this container if there is 
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilites: [gpu]
