@@ -1,4 +1,4 @@
-FROM paws:1.0
+FROM jinhoishere/paws:1.1
 
 COPY ./ /app
 
