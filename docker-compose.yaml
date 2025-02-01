@@ -4,7 +4,7 @@ services:
     ports:
       - 8888:8888
     volumes:
-      - ./app:/app
+      - ./model/app:/app
     # Share NVIDIA GPU between the host and this container if there is 
     # deploy:
     #   resources:
