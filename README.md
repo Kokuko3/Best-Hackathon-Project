@@ -1,6 +1,6 @@
 # Pet Audio Warning System (P.A.W.S.)
 
-### Team : Jungle Gap
+### Team: Jungle Gap
 - Location
     * Russ 355
 
