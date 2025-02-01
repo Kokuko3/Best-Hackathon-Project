@@ -16,36 +16,40 @@ moods = {
     "Angry": ("😾", os.path.join(BASE_DIR, "angry-cat-41822.mp3")),
 }
 
-# Default mood at start
-current_mood = "Happy"  # Default starting mood
+# Randomize the starting mood
+current_mood = random.choice(list(moods.keys()))
+is_paused = False  # Track whether the audio is paused
 
 # Function to check if audio is still playing and re-enable the button when done
 def check_audio_status():
     if not pygame.mixer.music.get_busy():  # If audio is not playing
-        play_button.config(state="normal", bg=button_color, fg="white")  # Re-enable button
+        play_button.config(state="normal", bg=button_color, fg="white", text="🔊 Play Sound")  # Re-enable button
     else:
         root.after(500, check_audio_status)  # Check again after 500ms
 
-# Function to play sound
-def play_sound():
-    sound_file = moods[current_mood][1]  # Get sound file for the current mood
+# Function to toggle play/pause
+def play_pause_sound():
+    global is_paused
 
-    if os.path.exists(sound_file):  # Check if the file exists before playing
-        play_button.config(state="disabled", bg="white", fg="black")  # Disable and turn white
-        pygame.mixer.music.load(sound_file)
-        pygame.mixer.music.play()
-        root.after(500, check_audio_status)  # Start checking if audio is done
-    else:
-        print(f"Error: File not found - {sound_file}")
-
-# Function to change mood randomly
-def change_mood():
-    global current_mood
-    current_mood = random.choice(list(moods.keys()))  # Pick a random mood
-    emoji, sound_file = moods[current_mood]  # Get emoji and sound
-    
-    mood_label.config(text=emoji)  # Update emoji
-    mood_text_label.config(text=f"Mood: {current_mood}")  # Update text
+    if pygame.mixer.music.get_busy():  # If sound is playing
+        if is_paused:  # Resume if paused
+            pygame.mixer.music.unpause()
+            play_button.config(text="⏸️ Pause", bg="white", fg="black")
+            is_paused = False
+        else:  # Pause if playing
+            pygame.mixer.music.pause()
+            play_button.config(text="🔊 Resume", bg=button_color, fg="white")
+            is_paused = True
+    else:  # If sound is not playing, start playback
+        sound_file = moods[current_mood][1]  # Get sound file for the current mood
+        if os.path.exists(sound_file):
+            pygame.mixer.music.load(sound_file)
+            pygame.mixer.music.play()
+            play_button.config(text="⏸️ Pause", bg="white", fg="black")  # Change button state
+            root.after(500, check_audio_status)  # Monitor audio status
+            is_paused = False
+        else:
+            print(f"Error: File not found - {sound_file}")
 
 # Create main window
 root = tk.Tk()
@@ -68,9 +72,6 @@ menu_bar = tk.Menu(root, tearoff=0)
 def open_menu(event):
     menu_bar.post(event.x_root, event.y_root)
 
-# Create the hamburger button and place it in the top-left corner
-hamburger_btn = tk.Button(menu_frame, text="☰", font=("Arial", 14), command=lambda: menu_bar.post(10, 50), bg=header_color, fg="white", relief="flat")
-hamburger_btn.pack(side="left", padx=5, pady=5)
 
 # Create header
 header_label = tk.Label(menu_frame, text="🐾 PAWS - Mood Detector", font=("Arial", 16, "bold"), bg=header_color, fg="white")
@@ -81,19 +82,15 @@ main_frame = tk.Frame(root, bg="#403A3A")
 main_frame.pack(fill="both", expand=True)
 
 # Create a Label to display mood emoji
-mood_label = tk.Label(main_frame, text="😺", font=("Arial", 50), bg="#403A3A", fg=text_color)
+mood_label = tk.Label(main_frame, text=moods[current_mood][0], font=("Arial", 50), bg="#403A3A", fg=text_color)
 mood_label.pack(pady=20)
 
 # Create a Label to display text description of mood
-mood_text_label = tk.Label(main_frame, text="Mood: Happy", font=("Arial", 14), bg="#403A3A", fg=text_color)
+mood_text_label = tk.Label(main_frame, text=f"Mood: {current_mood}", font=("Arial", 14), bg="#403A3A", fg=text_color)
 mood_text_label.pack(pady=5)
 
-# Add a Button to detect mood
-detect_button = tk.Button(main_frame, text="Detect Mood", command=change_mood, bg=button_color, fg="white", font=("Arial", 12), relief="flat")
-detect_button.pack(pady=10)
-
-# Add a Button to play sound
-play_button = tk.Button(main_frame, text="🔊 Play Sound", command=play_sound, bg=button_color, fg="white", font=("Arial", 12), relief="flat")
+# Add a Button to play or pause sound
+play_button = tk.Button(main_frame, text="🔊 Play Sound", command=play_pause_sound, bg=button_color, fg="white", font=("Arial", 12), relief="flat")
 play_button.pack(pady=10)
 
 # Create footer
