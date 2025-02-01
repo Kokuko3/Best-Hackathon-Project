@@ -10,3 +10,5 @@
     * [Gabriel Droesch](https://github.com/Gababeast12)
     * [Jinho Nam](https://github.com/jinhoishere)
     * [Mason McDaniel](https://github.com/Kokuko3)
+ 
+    * https://raidermailwright-my.sharepoint.com/:p:/g/personal/saleh_58_wright_edu/EeBEQICQXYxDiekMrJz-gAABt5k4hoWyeIdKr-XUYbRqIA?e=9AMQdx
