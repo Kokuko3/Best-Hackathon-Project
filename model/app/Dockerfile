@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:latest
+FROM paws:1.0
 
 COPY ./ /app
 
