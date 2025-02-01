@@ -3,3 +3,6 @@ matplotlib
 scikit-learn
 scipy
 librosa
+tensorboard
+torch-summary
+ipywidgets
