@@ -35,7 +35,7 @@ void setup() {
   }
 }
 
-#define SAMPLES 128 // make it a power of two for best DMA performance
+#define SAMPLES 1024 // make it a power of two for best DMA performance
 
 void loop() {
   // read a bunch of samples:
@@ -67,8 +67,8 @@ void loop() {
 
   // find the 'peak to peak' max
   float maxsample, minsample;
-  minsample = 100000;
-  maxsample = -100000;
+  minsample = 13500;
+  maxsample = -17000;
   for (int i=0; i<SAMPLES; i++) {
     minsample = min(minsample, (float)samples[i]);
     maxsample = max(maxsample, (float)samples[i]);
