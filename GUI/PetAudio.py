@@ -15,52 +15,72 @@ PAWS_ICON = os.path.join(BASE_DIR, "paws.png")  # Header and footer icon
 VOLUME_ICON = os.path.join(BASE_DIR, "volume.png")  # Audio button
 DEFAULT_IMAGE_PATH = os.path.join(BASE_DIR, "default.png")  # Default mood image
 
-# Mapping: Mood -> (Emoji Image Path, Sound File)
-moods = {
-    "Happy": (os.path.join(BASE_DIR, "happy-cat-face.png"), os.path.join(BASE_DIR, "cats-meow-81221.mp3")),
-    "Hungry": (os.path.join(BASE_DIR, "hungry.png"), os.path.join(BASE_DIR, "angry-cat-41822.mp3")),
-    "Sad": (os.path.join(BASE_DIR, "sad-cat.png"), os.path.join(BASE_DIR, "200412-cat-stray-sad-meows-ms-6am-60384.mp3")),
+# Mapping of moods to corresponding image files
+MOOD_IMAGES = {
+    "Happy": os.path.join(BASE_DIR, "happy-cat-face.png"),
+    "Hungry": os.path.join(BASE_DIR, "hungry.png"),
+    "Sad": os.path.join(BASE_DIR, "sad-cat.png"),
 }
 
-# Function to get the correct image path (uses default if missing)
+# Default values for mood and audio
+current_mood = "Happy"
+current_audio = None  # This will be updated with AI-received audio path
+is_paused = False  # Track whether the audio is paused
+
+# Function to load a mood image, using a default if missing
 def get_mood_image(mood):
-    img_path = moods[mood][0]
+    img_path = MOOD_IMAGES.get(mood, DEFAULT_IMAGE_PATH)
     if not os.path.exists(img_path):
         print(f"⚠️ Warning: Image missing for {mood}, using default image.")
-        return DEFAULT_IMAGE_PATH  # Return default image instead
+        return DEFAULT_IMAGE_PATH  # Use default if image is missing
     return img_path
-
-# Randomize the starting mood
-current_mood = random.choice(list(moods.keys()))
-is_paused = False  # Track whether the audio is paused
 
 # Function to check if audio is still playing and re-enable the button when done
 def check_audio_status():
-    if not pygame.mixer.music.get_busy():  # If audio is not playing
-        play_button.config(state="normal")  # Re-enable button
+    if not pygame.mixer.music.get_busy():  # If no audio is playing
+        play_button.config(state="normal")  # Re-enable play button
     else:
-        root.after(500, check_audio_status)  # Check again after 500ms
+        root.after(500, check_audio_status)  # Check again every 500ms
 
-# Function to toggle play/pause
+# Function to play or pause the received AI audio
 def play_pause_sound():
     global is_paused
 
-    if pygame.mixer.music.get_busy():  # If sound is playing
-        if is_paused:  # Resume if paused
+    if pygame.mixer.music.get_busy():  # If audio is currently playing
+        if is_paused:  # Resume playback if paused
             pygame.mixer.music.unpause()
             is_paused = False
-        else:  # Pause if playing
+        else:  # Pause playback if playing
             pygame.mixer.music.pause()
             is_paused = True
-    else:  # If sound is not playing, start playback
-        sound_file = moods[current_mood][1]  # Get sound file for the current mood
-        if os.path.exists(sound_file):
-            pygame.mixer.music.load(sound_file)
+    elif current_audio:  # If there's a valid audio file, play it
+        if os.path.exists(current_audio):
+            pygame.mixer.music.load(current_audio)
             pygame.mixer.music.play()
             root.after(500, check_audio_status)  # Monitor audio status
             is_paused = False
         else:
-            print(f"Error: File not found - {sound_file}")
+            print(f"Error: File not found - {current_audio}")
+
+# Function to update mood and audio when AI sends data
+def update_mood(mood, audio_path):
+    global current_mood, current_audio, mood_image
+
+    # Update mood text and image
+    current_mood = mood
+    current_audio = audio_path
+
+    # Update mood text label
+    mood_text_label.config(text=f"Mood: {mood}")
+
+    # Load and update mood image
+    new_mood_path = get_mood_image(mood)
+    new_mood_image = Image.open(new_mood_path)
+    new_mood_image = new_mood_image.resize((100, 100), Image.ANTIALIAS)
+    mood_image = ImageTk.PhotoImage(new_mood_image)
+    mood_label.config(image=mood_image)
+
+    print(f"🔄 Mood updated to: {mood}, Audio File: {audio_path}")  # Debugging log
 
 # Create main window
 root = tk.Tk()
@@ -99,16 +119,17 @@ title_label.pack(side="left")
 main_frame = tk.Frame(root, bg="#403A3A")
 main_frame.pack(fill="both", expand=True)
 
-# Load mood image from the GUI folder or use default if missing
+# Load initial mood image
 mood_path = get_mood_image(current_mood)
-mood_image = Image.open(mood_path)  # Load image
-mood_image = mood_image.resize((100, 100), Image.ANTIALIAS)  # Resize
+mood_image = Image.open(mood_path)
+mood_image = mood_image.resize((100, 100), Image.ANTIALIAS)
 mood_image = ImageTk.PhotoImage(mood_image)
 
+# Label to display mood image
 mood_label = tk.Label(main_frame, image=mood_image, bg="#403A3A")
 mood_label.pack(pady=20)
 
-# Create a Label to display text description of mood
+# Label to display mood text
 mood_text_label = tk.Label(main_frame, text=f"Mood: {current_mood}", font=("Arial", 14), bg="#403A3A", fg=text_color)
 mood_text_label.pack(pady=5)
 
@@ -121,7 +142,7 @@ else:
     print("⚠️ Warning: Volume icon not found. Using text button instead.")
     volume_icon = None
 
-# Add an Image Button to play or pause sound
+# Button to play or pause audio
 if volume_icon:
     play_button = tk.Button(main_frame, image=volume_icon, command=play_pause_sound, bg="#403A3A", relief="flat")
 else:
@@ -137,18 +158,7 @@ footer.pack(fill="x")
 footer_content = tk.Frame(footer, bg=header_color)
 footer_content.pack(anchor="center")
 
-# Load and resize PAWS icon for footer
-if os.path.exists(PAWS_ICON):
-    paws_footer = Image.open(PAWS_ICON)
-    paws_footer = paws_footer.resize((20, 20), Image.ANTIALIAS)  # Resize smaller
-    paws_footer = ImageTk.PhotoImage(paws_footer)
-
-    paws_footer_label = tk.Label(footer_content, image=paws_footer, bg=header_color)
-    paws_footer_label.pack(side="left", padx=5)  # Moves PAWS icon to left of text
-else:
-    print("⚠️ Warning: PAWS icon not found for footer.")
-
-# Add centered footer text next to icon
+# Add footer text
 footer_label = tk.Label(footer_content, text="Mood Detection in Progress...", font=("Arial", 10), bg=header_color, fg="white")
 footer_label.pack(side="left")
 
